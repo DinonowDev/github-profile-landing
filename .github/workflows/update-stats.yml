@@ -1,0 +1,55 @@
+name: Update Profile Stats
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+    inputs:
+      theme:
+        description: "Curtain character"
+        required: false
+        default: ""
+        type: choice
+        options: ["", "random", "cat", "spiderman", "batman"]
+  push:
+    branches: [main]
+    paths:
+      - "scripts/generate-cards.mjs"
+      - ".github/workflows/update-stats.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Always use live GitHub data in CI. Local demo snapshot is USE_MOCK default.
+      # CARD_THEME: set Actions variable to cat / spiderman / batman, or leave empty for random.
+      - name: Generate SVG card
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_USERNAME: ${{ vars.GH_USERNAME || github.repository_owner }}
+          CARD_THEME: ${{ inputs.theme || vars.CARD_THEME }}
+          USE_MOCK: "0"
+        run: node scripts/generate-cards.mjs
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/profile-card.svg
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "chore: refresh profile stats card"
+            git push
+          fi

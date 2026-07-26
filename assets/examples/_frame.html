@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    html, body { margin: 0; background: #09090b; overflow: hidden; }
+    #host svg { display: block; width: 920px; height: 500px; }
+  </style>
+</head>
+<body>
+  <div id="host"></div>
+  <script type="module">
+    const params = new URLSearchParams(location.search);
+    const theme = params.get("theme") || "cat";
+    const t = Number(params.get("t") || "0");
+    const res = await fetch(`./${theme}.svg`);
+    const xml = await res.text();
+    document.getElementById("host").innerHTML = xml;
+    const svg = document.querySelector("#host svg");
+    svg.pauseAnimations();
+    svg.setCurrentTime(t);
+    document.documentElement.dataset.ready = "1";
+    document.title = `ready:${theme}:${t}`;
+  </script>
+</body>
+</html>
