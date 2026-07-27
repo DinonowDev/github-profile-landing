@@ -108,9 +108,10 @@ node scripts/generate-cards.mjs
 USE_MOCK=0 GH_USERNAME=YourUsername GITHUB_TOKEN=ghp_xxx CARD_THEME=cat node scripts/generate-cards.mjs
 ```
 
-Regenerate looping example GIFs (needs Google Chrome):
+Regenerate looping example GIFs (needs Google Chrome + [gifski](https://gif.ski)):
 
 ```bash
+cargo install gifski   # once
 node scripts/render-example-gifs.mjs
 ```
 

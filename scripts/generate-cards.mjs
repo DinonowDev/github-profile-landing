@@ -364,7 +364,7 @@ function glyphDots(text, cell = 8, gap = 2, tracking = 1) {
  * Phase 2: dots fly into the real heatmap cells
  * Then loop.
  */
-function animatedContributionPanel(data, leftW) {
+function animatedContributionPanel(data, leftW, introDelay = 11.2) {
   const cell = 8;
   const cg = 2;
   const step = cell + cg;
@@ -400,7 +400,7 @@ function animatedContributionPanel(data, leftW) {
   const MORPH = 2.4;
   const SETTLE = 4.2;
   const BACK = 1.6;
-  const INTRO_DELAY = 11.2;
+  const INTRO_DELAY = introDelay;
   const TOTAL = HOLD + MORPH + SETTLE + BACK;
   const tHold = +(HOLD / TOTAL).toFixed(4);
   const tMorphEnd = +((HOLD + MORPH) / TOTAL).toFixed(4);
@@ -876,6 +876,7 @@ const CURTAIN_THEMES = {
     glow: "#f8dc62",
     sparkle: "#f8dc62",
     exit: "slideDown",
+    morphDelay: 5.3,
     hero: heroCat,
     defs: `
     <g id="cat-face">
@@ -907,6 +908,7 @@ const CURTAIN_THEMES = {
     glow: "#ff5964",
     sparkle: "#ffd9dc",
     exit: "webUp",
+    morphDelay: 10.6,
     hero: heroSpiderMan,
     defs: `
     <clipPath id="spidey-mask-clip">
@@ -963,6 +965,7 @@ const CURTAIN_THEMES = {
     glow: "#f5d76e",
     sparkle: "#ffe9a0",
     exit: "batmobile",
+    morphDelay: 10.6,
     hero: heroBatman,
     defs: `
     <radialGradient id="bat-signal-glow" cx="0.5" cy="0.45" r="0.55">
@@ -1060,7 +1063,8 @@ function openingShutter(width, height, themeName) {
     // Post-reveal beat: cat looks around; Spidey shoots a web; Batmobile arrives.
     camAim: at(4.15),
     camHit: at(4.45),
-    lookBEnd: at(5.2),
+    lookBEnd: at(4.4),
+    exitDone: at(5.1),
     // Spidey climb after the camera splat sticks.
     webStart: at(5.5),
     gone: at(10.4),
@@ -1088,7 +1092,7 @@ function openingShutter(width, height, themeName) {
   const lookTimes = isCat
     ? [
         0, K.blindUp,
-        at(4.2), at(4.4), at(4.7), at(4.95), K.lookBEnd,
+        at(3.95), at(4.08), at(4.2), at(4.32), K.lookBEnd,
         1,
       ].join(";")
     : "0;1";
@@ -1114,9 +1118,9 @@ function openingShutter(width, height, themeName) {
             splines: "0.25 0.1 0.25 1;0.4 0 0.2 1;0 0 1 1;0.5 0 0.9 0.4;0.2 0.9 0.3 1;0 0 1 1;0 0 1 1;0.4 0 0.6 1;0.4 0 0.6 1;0.3 0 0.55 1;0 0 1 1",
           }
         : {
-            values: "150 0;0 0;0 0;0 0;0 14;0 0;0 0;0 0;0 240",
-            keyTimes: `0;${K.walkedIn};${K.planted};${K.grabbed};${K.yankEnd};${K.released};${K.blindUp};${K.lookBEnd};1`,
-            splines: "0.25 0.1 0.25 1;0.4 0 0.2 1;0 0 1 1;0.5 0 0.9 0.4;0.2 0.9 0.3 1;0 0 1 1;0 0 1 1;0.42 0 0.7 0.55",
+            values: "150 0;0 0;0 0;0 0;0 14;0 0;0 0;0 0;0 240;0 240",
+            keyTimes: `0;${K.walkedIn};${K.planted};${K.grabbed};${K.yankEnd};${K.released};${K.blindUp};${K.lookBEnd};${K.exitDone};1`,
+            splines: "0.25 0.1 0.25 1;0.4 0 0.2 1;0 0 1 1;0.5 0 0.9 0.4;0.2 0.9 0.3 1;0 0 1 1;0 0 1 1;0.55 0.05 0.75 0.95;0 0 1 1",
           };
 
   return `
@@ -1321,14 +1325,14 @@ function batmobileExit(A, heroX, heroY, width, height) {
 
   // Bats streak across the frame from mixed directions as he drives off.
   const swarm = [
-    [ -40, 80, width + 60, 40, 0.00, 1.4 ],
-    [ width + 30, 140, -50, 90, 0.08, 1.1 ],
-    [ -30, 220, width + 40, 160, 0.14, 1.6 ],
-    [ width + 20, 300, -40, 250, 0.22, 1.25 ],
-    [ -50, 360, width + 70, 280, 0.30, 1.5 ],
-    [ width + 40, 60, -30, 180, 0.18, 1.0 ],
-    [ -20, 420, width + 50, 340, 0.40, 1.35 ],
-    [ width + 10, 200, -60, 120, 0.48, 1.2 ],
+    [ -40, 80, width + 60, 40, 0.00, 3.4 ],
+    [ width + 30, 140, -50, 90, 0.08, 2.8 ],
+    [ -30, 220, width + 40, 160, 0.14, 3.8 ],
+    [ width + 20, 300, -40, 250, 0.22, 3.0 ],
+    [ -50, 360, width + 70, 280, 0.30, 3.6 ],
+    [ width + 40, 60, -30, 180, 0.18, 2.6 ],
+    [ -20, 420, width + 50, 340, 0.40, 3.2 ],
+    [ width + 10, 200, -60, 120, 0.48, 2.9 ],
   ].map(([x0, y0, x1, y1, delay, sc], i) => {
     const t0 = +(K.drive + delay).toFixed(4);
     const t1 = +(t0 + 0.12).toFixed(4);
@@ -1342,9 +1346,29 @@ function batmobileExit(A, heroX, heroY, width, height) {
     </g>`;
   }).join("\n    ");
 
+  // One oversized bat swoops close to the "camera" as the car peels out.
+  const t0 = +(K.drive + 0.04).toFixed(4);
+  const tPeak = +(t0 + 0.2).toFixed(4);
+  const t1 = +(t0 + 0.42).toFixed(4);
+  const closeUpBat = `<g opacity="0">
+      <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;${t0};${+(t0 + 0.03).toFixed(4)};${+(t1 - 0.03).toFixed(4)};${t1};1" dur="${DUR}s" fill="freeze"/>
+      <animateTransform attributeName="transform" type="translate"
+        values="-140 ${height + 60};-140 ${height + 60};${width * 0.48} ${height * 0.38};${width + 160} -100;${width + 160} -100"
+        keyTimes="0;${t0};${tPeak};${t1};1" dur="${DUR}s" fill="freeze" calcMode="spline"
+        keySplines="0 0 1 1;0.12 0 0.42 1;0.22 0 0.58 1;0 0 1 1"/>
+      <g>
+        <animateTransform attributeName="transform" type="scale"
+          values="8;8;11.5;10;8" keyTimes="0;${t0};${tPeak};${t1};1" dur="${DUR}s" fill="freeze"/>
+        <animateTransform attributeName="transform" type="rotate" additive="sum"
+          values="-32;-32;-12;8;-32" keyTimes="0;${t0};${tPeak};${t1};1" dur="${DUR}s" fill="freeze"/>
+        <use href="#bat-fly" transform="translate(0 0)"/>
+      </g>
+    </g>`;
+
   return `
     <!-- Flying bat swarm across the card while he peels out -->
     <g>${swarm}</g>
+    ${closeUpBat}
 
     <g>
       <!-- Drive across, shrinking as he gets farther (perspective) -->
@@ -1519,7 +1543,7 @@ function buildCard(data, theme) {
     242,
     `
     ${label("CONTRIBUTION ACTIVITY", 16, 26)}
-    ${animatedContributionPanel(data, leftW)}
+    ${animatedContributionPanel(data, leftW, CURTAIN_THEMES[theme]?.morphDelay ?? 11.2)}
   `,
   )}
 
